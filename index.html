@@ -33,6 +33,7 @@
     /* outer = vertical scroll (brands), inner = horizontal scroll (variants) */
     .outer {
       height: 100vh;
+      height: 100dvh;
       overflow-y: auto;
       scroll-snap-type: y mandatory;
       scrollbar-width: none;
@@ -44,6 +45,7 @@
 
     .brand-row {
       height: 100vh;
+      height: 100dvh;
       scroll-snap-align: start;
       position: relative;
       overflow: hidden;
@@ -64,6 +66,7 @@
       transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1);
       clip-path: inset(0 0 0 0);
       pointer-events: none;
+      background: inherit;
     }
 
     .p-layer.active {
@@ -167,6 +170,33 @@
       font-weight: 600
     }
 
+    @media(max-width: 700px) {
+      .outer, .brand-row { height: 100dvh; }
+      
+      .p-top { padding: 20px; }
+      .p-bottom { padding: 20px 20px 30px; flex-direction: column; gap: 20px; align-items: flex-start; }
+      
+      .p-actions { width: 100%; justify-content: space-between; }
+      .p-tag { position: absolute; top: -20px; left: 0; white-space: nowrap; }
+      
+      .p-wm { font-size: clamp(42px, 15vw, 90px); }
+      .p-no { font-size: 10px; }
+      .p-font { font-size: 9px; text-align: left; margin-top: 4px; }
+      
+      .p-board-head, .p-board-bar { padding: 15px 20px; }
+      .p-board-body { margin: 0 20px; }
+      .url-input { font-size: 12px; }
+
+      /* Hero Page (Cover) mobile grid */
+      .cover { padding: 40px 20px; }
+      .cover-label { margin-bottom: 24px; }
+      .cover-title { margin-bottom: 32px; font-size: clamp(24px, 6vw, 32px); }
+      .cover-grid { grid-template-columns: repeat(2, 1fr); }
+      .cover-item { padding: 24px 16px; }
+      .cover-item-no { margin-bottom: 8px; }
+      .cover-item-wm { font-size: clamp(18px, 4vw, 24px); }
+    }
+
     /* vertical scroll hint */
     .v-hint {
       position: absolute;
@@ -185,6 +215,7 @@
     /* ─── cover page ─── */
     .cover {
       height: 100vh;
+      height: 100dvh;
       scroll-snap-align: start;
       display: flex;
       flex-direction: column;
@@ -834,7 +865,7 @@
 
     function setVariant(row, nextVi) {
       const currentVi = parseInt(row.dataset.vi);
-      if (currentVi === nextVi) return;
+      if (currentVi === nextVi || row.classList.contains('is-animating')) return;
 
       const bi = parseInt(row.dataset.brandIdx);
       const v = BRANDS[bi].variants[nextVi];
@@ -843,6 +874,7 @@
       const nextLayer = layers[nextVi];
 
       row.dataset.vi = nextVi;
+      row.classList.add('is-animating');
       row.classList.toggle('lt', !!v.lt);
 
       // Determine wipe direction
@@ -882,6 +914,7 @@
         curLayer.classList.remove('active');
         nextLayer.classList.remove('wiping');
         nextLayer.classList.add('active');
+        row.classList.remove('is-animating');
         
         // Update moodboard context
         const boardBody = row.querySelector('.p-board-body');
@@ -936,13 +969,19 @@
 
     // ── Utils ──
     function rgbToHex(c) {
-      if (c.startsWith('#')) return c;
+      if (c.startsWith('#')) {
+        if (c.length === 4) return '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+        return c;
+      }
       const rgb = c.match(/\d+/g);
       if (!rgb) return '#000000';
       return "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
     }
     function getLum(hex) {
-      const c = hex.substring(1); const rgb = parseInt(c, 16); const r = (rgb >> 16) & 0xff; const g = (rgb >> 8) & 0xff; const b = (rgb >> 0) & 0xff;
+      hex = rgbToHex(hex).substring(1);
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 
@@ -958,6 +997,8 @@
           layer.style.background = bgInp.value;
           row.querySelector('.p-bg-swatch').style.background = bgInp.value;
           row.classList.toggle('lt', getLum(bgInp.value) > 170);
+          // Sync row and board background
+          row.style.background = bgInp.value;
         } else {
           layer.style.color = txtInp.value;
           row.querySelector('.p-txt-swatch').style.background = txtInp.value;
@@ -1033,6 +1074,26 @@
             setVariant(row, vIdx);
           }
         }
+      }
+    });
+
+    // ── Touch Navigation ──
+    let tX = 0, tY = 0;
+    document.addEventListener('touchstart', e => {
+      tX = e.touches[0].clientX;
+      tY = e.touches[0].clientY;
+    });
+    document.addEventListener('touchend', e => {
+      const dX = tX - e.changedTouches[0].clientX;
+      const dY = tY - e.changedTouches[0].clientY;
+      const row = e.target.closest('.brand-row');
+      
+      // Horizontal swipe (Variant change)
+      if (Math.abs(dX) > 40 && Math.abs(dX) > Math.abs(dY) && row) {
+        let vIdx = parseInt(row.dataset.vi);
+        if (dX > 0) vIdx++; else vIdx--;
+        vIdx = Math.max(0, Math.min(vIdx, 2));
+        setVariant(row, vIdx);
       }
     });
 
