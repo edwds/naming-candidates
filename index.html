@@ -170,6 +170,44 @@
       font-weight: 600
     }
 
+    /* Details/Notes Panel */
+    .p-edit {
+      position: absolute;
+      inset: 0;
+      background: inherit;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .p-edit.open { opacity: 1; pointer-events: auto; }
+    .p-edit-head { padding: 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,.1); }
+    .p-edit-body { padding: 32px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 32px; }
+    
+    .p-edit-group { display: flex; flex-direction: column; gap: 12px; }
+    .p-edit-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; opacity: .4; font-weight: 600; }
+    
+    .p-range-wrap { display: flex; align-items: center; gap: 16px; }
+    .p-range { flex: 1; height: 2px; -webkit-appearance: none; appearance: none; background: rgba(128,128,128,.2); outline: none; }
+    .p-range::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: currentColor; cursor: pointer; }
+    
+    .p-note-area {
+      background: rgba(128,128,128,.05);
+      border: 1px solid rgba(128,128,128,.1);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 120px;
+      color: inherit;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      line-height: 1.6;
+      width: 100%;
+    }
+    .p-note-area:focus { outline: none; border-color: rgba(128,128,128,.3); }
+
     @media(max-width: 850px) {
       .outer, .brand-row { height: 100dvh; }
       
@@ -814,7 +852,26 @@
           TXT
           <input type="color" class="p-input-txt" value="${v1.color}">
         </label>
+        <button class="p-btn p-edit-open">Edit</button>
         <button class="p-btn p-board-open">Moodboard</button>
+      </div>
+    </div>
+    <div class="p-edit">
+      <div class="p-edit-head">
+        <div style="font-size:14px;font-weight:700">Styling & Notes</div>
+        <button class="p-btn p-edit-close">Save & Close</button>
+      </div>
+      <div class="p-edit-body">
+        <div class="p-edit-group">
+          <div class="p-range-wrap">
+            <div class="p-edit-label">Letter Spacing</div>
+            <input type="range" class="p-range p-ls-range" min="-0.1" max="0.3" step="0.005" value="${parseFloat(v1.ls) || 0}">
+          </div>
+        </div>
+        <div class="p-edit-group" style="flex:1">
+          <div class="p-edit-label">Naming Notes</div>
+          <textarea class="p-note-area" placeholder="Write your thoughts about this candidate..."></textarea>
+        </div>
       </div>
     </div>
     <div class="p-board">
@@ -844,14 +901,14 @@
       if (currentVi === nextVi || row.classList.contains('is-animating')) return;
 
       const bi = parseInt(row.dataset.brandIdx);
-      const v = BRANDS[bi].variants[nextVi];
+      const v = getVConfig(bi, nextVi);
       const layers = row.querySelectorAll('.p-layer');
       const curLayer = layers[currentVi];
       const nextLayer = layers[nextVi];
 
       row.dataset.vi = nextVi;
       row.classList.add('is-animating');
-      row.classList.toggle('lt', !!v.lt);
+      row.classList.toggle('lt', getLum(v.bg) > 170);
 
       // Determine wipe direction
       const swipeDir = nextVi > currentVi ? 'right' : 'left';
@@ -905,10 +962,35 @@
       }, 800);
     }
 
-    // ── Moodboard store ──
-    let S = {};
-    function load() { try { S = JSON.parse(localStorage.getItem(KEY) || '{}') } catch (e) { S = {} } BRANDS.forEach(b => b.variants.forEach(v => { if (!Array.isArray(S[v.board])) S[v.board] = [] })) }
-    function save() { localStorage.setItem(KEY, JSON.stringify(S)) }
+    // ── Storage ──
+    const STORE_KEY = 'naming-v4-data';
+    let S = { moodboards: {}, overrides: {} };
+
+    function load() {
+      try {
+        const d = localStorage.getItem(STORE_KEY);
+        if (d) S = JSON.parse(d);
+        if (!S.moodboards) S.moodboards = {};
+        if (!S.overrides) S.overrides = {};
+      } catch (e) { S = { moodboards: {}, overrides: {} }; }
+    }
+    function save() {
+      localStorage.setItem(STORE_KEY, JSON.stringify(S));
+    }
+
+    function getVConfig(bi, vi) {
+      const key = `${bi}-${vi}`;
+      const base = BRANDS[bi].variants[vi];
+      const ov = S.overrides[key] || {};
+      return { ...base, ...ov };
+    }
+
+    function updateOverride(bi, vi, data) {
+      const key = `${bi}-${vi}`;
+      if (!S.overrides[key]) S.overrides[key] = {};
+      Object.assign(S.overrides[key], data);
+      save();
+    }
 
     function layout(n) {
       return [{}, { c: '1fr', r: '1fr', s: [] }, { c: '1fr 1fr', r: '1fr', s: [] }, { c: '1fr 1fr', r: '1fr 1fr', s: [, , '1/span 2'] }, { c: '1fr 1fr', r: '1fr 1fr', s: [] }, { c: '1fr 1fr 1fr', r: '1fr 1fr', s: [, , , '1/span 2'] }, { c: '1fr 1fr 1fr', r: '1fr 1fr', s: [] }, { c: '1fr 1fr 1fr', r: '1fr 1fr 1fr', s: [, , , , '1/span 2', , '1/span 2'] }, { c: '1fr 1fr 1fr 1fr', r: '1fr 1fr', s: [] }, { c: '1fr 1fr 1fr', r: '1fr 1fr 1fr', s: [] }][Math.min(n, 9)];
@@ -918,13 +1000,13 @@
       const area = document.querySelector(`[data-board-grid="${board}"]`);
       if (!area) return;
       const grid = area.querySelector('.mb-grid');
-      const imgs = S[board] || [];
-      area.classList.toggle('has-images', imgs.length > 0);
+      const mb = S.moodboards[board] || [];
+      area.classList.toggle('has-images', mb.length > 0);
       grid.innerHTML = '';
-      if (!imgs.length) return;
-      const { c, r, s } = layout(imgs.length);
+      if (!mb.length) return;
+      const { c, r, s } = layout(mb.length);
       grid.style.gridTemplateColumns = c; grid.style.gridTemplateRows = r;
-      imgs.forEach((url, i) => {
+      mb.forEach((url, i) => {
         const t = document.createElement('div'); t.className = 'mb-tile';
         if (s[i]) t.style.gridColumn = s[i];
         const img = document.createElement('img'); img.src = url; img.loading = 'lazy';
@@ -935,13 +1017,13 @@
           v.classList.add('open');
         };
         const del = document.createElement('button'); del.className = 'mb-tile-del'; del.textContent = '\u00d7';
-        del.addEventListener('click', e => { e.stopPropagation(); S[board].splice(i, 1); save(); render(board); cnt(board) });
+        del.addEventListener('click', e => { e.stopPropagation(); mb.splice(i, 1); save(); render(board); cnt(board) });
         t.append(img, del); grid.appendChild(t);
       });
       cnt(board);
     }
-    function cnt(board) { const n = (S[board] || []).length; document.querySelectorAll(`.url-count[data-board="${board}"]`).forEach(el => el.textContent = `${n}/9`) }
-    function add(board, url) { url = url.trim(); if (!url.startsWith('http')) return; if (!S[board]) S[board] = []; if (S[board].length >= MAX || S[board].includes(url)) return; S[board].push(url); save(); render(board) }
+    function cnt(board) { const n = (S.moodboards[board] || []).length; document.querySelectorAll(`.url-count[data-board="${board}"]`).forEach(el => el.textContent = `${n}/9`) }
+    function add(board, url) { url = url.trim(); if (!url.startsWith('http')) return; if (!S.moodboards[board]) S.moodboards[board] = []; if (S.moodboards[board].length >= MAX || S.moodboards[board].includes(url)) return; S.moodboards[board].push(url); save(); render(board) }
 
     // ── Utils ──
     function rgbToHex(c) {
@@ -963,22 +1045,33 @@
 
     // ── Events ──
     document.addEventListener('input', e => {
+      const row = e.target.closest('.brand-row');
+      if (!row) return;
+      const bi = parseInt(row.dataset.brandIdx);
+      const vi = parseInt(row.dataset.vi);
+      const layer = row.querySelectorAll('.p-layer')[vi];
+
       const bgInp = e.target.closest('.p-input-bg');
       const txtInp = e.target.closest('.p-input-txt');
-      if (bgInp || txtInp) {
-        const row = e.target.closest('.brand-row');
-        const vi = parseInt(row.dataset.vi);
-        const layer = row.querySelectorAll('.p-layer')[vi];
-        if (bgInp) {
-          layer.style.background = bgInp.value;
-          row.querySelector('.p-bg-swatch').style.background = bgInp.value;
-          row.classList.toggle('lt', getLum(bgInp.value) > 170);
-          // Sync row and board background
-          row.style.background = bgInp.value;
-        } else {
-          layer.style.color = txtInp.value;
-          row.querySelector('.p-txt-swatch').style.background = txtInp.value;
-        }
+      const lsRange = e.target.closest('.p-ls-range');
+      const noteArea = e.target.closest('.p-note-area');
+
+      if (bgInp) {
+        layer.style.background = bgInp.value;
+        row.querySelector('.p-bg-swatch').style.background = bgInp.value;
+        row.classList.toggle('lt', getLum(bgInp.value) > 170);
+        row.style.background = bgInp.value;
+        updateOverride(bi, vi, { bg: bgInp.value });
+      } else if (txtInp) {
+        layer.style.color = txtInp.value;
+        row.querySelector('.p-txt-swatch').style.background = txtInp.value;
+        updateOverride(bi, vi, { color: txtInp.value });
+      } else if (lsRange) {
+        const val = lsRange.value + 'em';
+        layer.querySelector('.p-wm').style.letterSpacing = val;
+        updateOverride(bi, vi, { ls: val });
+      } else if (noteArea) {
+        updateOverride(bi, vi, { note: noteArea.value });
       }
     });
 
@@ -988,6 +1081,20 @@
         const row = dot.closest('.brand-row');
         setVariant(row, parseInt(dot.dataset.vi));
       }
+
+      const openEdit = e.target.closest('.p-edit-open');
+      if (openEdit) {
+        const row = openEdit.closest('.brand-row');
+        const bi = parseInt(row.dataset.brandIdx);
+        const vi = parseInt(row.dataset.vi);
+        const config = getVConfig(bi, vi);
+        row.querySelector('.p-note-area').value = config.note || '';
+        row.querySelector('.p-ls-range').value = parseFloat(config.ls) || 0;
+        row.querySelector('.p-edit').classList.add('open');
+      }
+
+      const closeEdit = e.target.closest('.p-edit-close');
+      if (closeEdit) closeEdit.closest('.p-edit').classList.remove('open');
 
       const openBtn = e.target.closest('.p-board-open');
       if (openBtn) openBtn.closest('.brand-row').querySelector('.p-board').classList.add('open');
@@ -1095,7 +1202,29 @@
 
     // ── Init ──
     load();
-    BRANDS.forEach(b => b.variants.forEach(v => render(v.board)));
+    BRANDS.forEach((brand, bi) => {
+      const row = document.querySelector(`.brand-row[data-brand="${brand.name}"]`);
+      if (!row) return;
+
+      // Apply saved overrides for ALL variants at bootstrap
+      brand.variants.forEach((v, vi) => {
+        const config = getVConfig(bi, vi);
+        const layer = row.querySelectorAll('.p-layer')[vi];
+        layer.style.background = config.bg;
+        layer.style.color = config.color;
+        layer.querySelector('.p-wm').style.letterSpacing = config.ls;
+        
+        // Finalize base UI for active variant
+        if (vi === 0) {
+          row.style.background = config.bg;
+          row.classList.toggle('lt', getLum(config.bg) > 170);
+          row.querySelector('.p-bg-swatch').style.background = config.bg;
+          row.querySelector('.p-txt-swatch').style.background = config.color;
+        }
+        
+        render(v.board);
+      });
+    });
   </script>
 </body>
 
