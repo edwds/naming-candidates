@@ -170,7 +170,7 @@
       font-weight: 600
     }
 
-    @media(max-width: 700px) {
+    @media(max-width: 850px) {
       .outer, .brand-row { height: 100dvh; }
       
       .p-top { padding: 20px; }
@@ -187,14 +187,14 @@
       .p-board-body { margin: 0 20px; }
       .url-input { font-size: 12px; }
 
-      /* Hero Page (Cover) mobile grid */
-      .cover { padding: 40px 20px; }
-      .cover-label { margin-bottom: 24px; }
-      .cover-title { margin-bottom: 32px; font-size: clamp(24px, 6vw, 32px); }
-      .cover-grid { grid-template-columns: repeat(2, 1fr); }
-      .cover-item { padding: 24px 16px; }
-      .cover-item-no { margin-bottom: 8px; }
-      .cover-item-wm { font-size: clamp(18px, 4vw, 24px); }
+      /* Hero Page (Cover) mobile grid 2x3 */
+      .cover { padding: 40px 20px; justify-content: center; }
+      .cover-label { margin-bottom: 20px; }
+      .cover-title { margin-bottom: 30px; font-size: clamp(24px, 6vw, 36px); }
+      .cover-grid { grid-template-columns: repeat(2, 1fr); max-width: 480px; margin: 0 auto; }
+      .cover-item { padding: 20px 12px; }
+      .cover-item-no { margin-bottom: 6px; }
+      .cover-item-wm { font-size: clamp(16px, 4vw, 22px); }
     }
 
     /* vertical scroll hint */
@@ -657,30 +657,6 @@
       border-style: dashed
     }
 
-    @media(max-width:700px) {
-
-      .p-top,
-      .p-bottom {
-        padding-left: 20px;
-        padding-right: 20px
-      }
-
-      .p-wm {
-        font-size: clamp(42px, 14vw, 100px)
-      }
-
-      .p-board-head,
-      .p-board-bar {
-        padding-left: 20px;
-        padding-right: 20px
-      }
-
-      .p-board-body {
-        margin: 0 20px
-      }
-
-      .v-hint {
-        display: none
       }
     }
   </style>
@@ -1096,6 +1072,26 @@
         setVariant(row, vIdx);
       }
     });
+
+    // ── Wheel Navigation (Mac/PC Horizontal Swipe) ──
+    let wheelAcc = 0;
+    window.addEventListener('wheel', e => {
+      const row = e.target.closest('.brand-row');
+      if (!row || row.classList.contains('is-animating')) return;
+
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        wheelAcc += e.deltaX;
+        if (Math.abs(wheelAcc) > 100) {
+          let vIdx = parseInt(row.dataset.vi);
+          if (wheelAcc > 0) vIdx++; else vIdx--;
+          vIdx = Math.max(0, Math.min(vIdx, 2));
+          setVariant(row, vIdx);
+          wheelAcc = 0;
+        }
+      } else {
+        wheelAcc = 0;
+      }
+    }, { passive: true });
 
     // ── Init ──
     load();
