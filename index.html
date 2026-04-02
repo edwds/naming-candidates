@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naming Candidates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Barlow:ital,wght@0,400;1,700;1,800;1,900&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=Josefin+Sans:ital,wght@0,300;1,600;1,700&family=Sora:wght@300;400;600;700&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;800;900&family=Anton&family=Abril+Fatface&family=Titan+One&family=Permanent+Marker&family=Pacifico&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #111;
+      color: #fff
+    }
+
+    /* outer = vertical scroll (brands), inner = horizontal scroll (variants) */
+    .outer {
+      height: 100vh;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+    }
+
+    .outer::-webkit-scrollbar {
+      display: none
+    }
+
+    .brand-row {
+      height: 100vh;
+      scroll-snap-align: start;
+      position: relative;
+      overflow: hidden;
+      background: #111;
+      transition: background 0.3s;
+    }
+
+    /* layers for wipe effect */
+    .p-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 32px;
+      opacity: 0;
+      z-index: 1;
+      transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+      clip-path: inset(0 0 0 0);
+      pointer-events: none;
+    }
+
+    .p-layer.active {
+      opacity: 1;
+      z-index: 2;
+      pointer-events: auto;
+    }
+
+    .p-layer.wiping {
+      opacity: 1;
+      z-index: 3;
+      pointer-events: auto;
+    }
+
+    .p-wm {
+      font-size: clamp(60px, 12vw, 160px);
+      line-height: .95;
+      letter-spacing: -.03em;
+      text-align: center;
+      transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+
+    /* top & bottom are fixed UI */
+    .p-ui {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      transition: color 0.5s ease
+    }
+
+    .p-top {
+      top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 24px 32px
+    }
+
+    .p-bottom {
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px 24px
+    }
+
+    .p-dots {
+      display: flex;
+      gap: 8px
+    }
+
+    .p-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      background: transparent;
+      opacity: .2;
+      cursor: pointer;
+      transition: all .15s;
+      padding: 0;
+    }
+
+    .p-dot.active {
+      background: currentColor;
+      opacity: .5
+    }
+
+    .p-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .p-btn {
+      background: none;
+      border: 1px solid;
+      border-radius: 3px;
+      padding: 7px 16px;
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: inherit;
+      opacity: .2;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+
+    .p-btn:hover {
+      opacity: .45
+    }
+
+    .p-tag {
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .15;
+      font-weight: 600
+    }
+
+    /* vertical scroll hint */
+    .v-hint {
+      position: absolute;
+      right: 32px;
+      top: 50%;
+      transform: translateY(-50%);
+      writing-mode: vertical-rl;
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      opacity: .08;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    /* ─── cover page ─── */
+    .cover {
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #111;
+      color: #fff;
+      padding: 0 32px;
+      position: relative;
+    }
+
+    .cover-label {
+      font-size: 10px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      opacity: .25;
+      margin-bottom: 40px;
+      font-weight: 600;
+    }
+
+    .cover-title {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 700;
+      letter-spacing: -.01em;
+      text-align: center;
+      line-height: 1;
+      margin-bottom: 56px;
+    }
+
+    .cover-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      width: 100%;
+      max-width: 840px;
+    }
+
+    .cover-item {
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, .06);
+      margin: -0.5px;
+      position: relative;
+      transition: background .15s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .cover-item:hover {
+      background: rgba(255, 255, 255, .04)
+    }
+
+    .cover-item-no {
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      opacity: .2;
+      margin-bottom: 12px;
+      font-weight: 600;
+      display: block;
+    }
+
+    .cover-item-wm {
+      font-size: clamp(22px, 3vw, 36px);
+      line-height: 1;
+      margin-bottom: 10px;
+      transition: all .2s;
+      color: #fff;
+    }
+
+    .cover-item:hover {
+      background: var(--v-bg) !important
+    }
+
+    .cover-item:hover .cover-item-wm {
+      color: var(--v-color) !important
+    }
+
+    .cover-item:hover .cover-item-no,
+    .cover-item:hover .cover-item-meta {
+      color: var(--v-color);
+      opacity: .35
+    }
+
+    .cover-item-meta {
+      font-size: 8px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      opacity: .2;
+      font-weight: 500;
+      transition: opacity .25s;
+      height: 14px;
+    }
+
+    .cover-scroll {
+      position: absolute;
+      bottom: 32px;
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      opacity: .1;
+      font-weight: 600;
+    }
+
+    /* ─── moodboard overlay ─── */
+    .p-board {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: inherit;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .p-board.open {
+      transform: translateY(0)
+    }
+
+    .p-board-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 32px;
+      flex-shrink: 0;
+    }
+
+    .p-board-title {
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      opacity: .35;
+      font-weight: 600
+    }
+
+    .p-board-close {
+      background: none;
+      border: 1px solid;
+      border-radius: 3px;
+      padding: 7px 16px;
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: inherit;
+      opacity: .25;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+
+    .p-board-close:hover {
+      opacity: .5
+    }
+
+    .p-board-body {
+      flex: 1;
+      position: relative;
+      margin: 0 32px;
+      border-radius: 4px;
+      overflow: hidden
+    }
+
+    .mb-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .mb-empty-icon {
+      opacity: .08
+    }
+
+    .mb-empty-text {
+      font-size: 10px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      font-weight: 600;
+      opacity: .1
+    }
+
+    .p-board-body.has-images .mb-empty {
+      display: none
+    }
+
+    .mb-grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      gap: 3px
+    }
+
+    .mb-tile {
+      position: relative;
+      overflow: hidden
+    }
+
+    .mb-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .4s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .mb-tile:hover img {
+      transform: scale(1.03)
+    }
+
+    .mb-tile-del {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, .6);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .15s;
+      backdrop-filter: blur(4px);
+    }
+
+    .mb-tile:hover .mb-tile-del {
+      opacity: 1
+    }
+
+    .p-board-bar {
+      padding: 14px 32px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .url-input {
+      flex: 1;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 3px;
+      padding: 9px 14px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .7);
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+
+    .url-input::placeholder {
+      color: rgba(255, 255, 255, .15);
+      font-size: 10px
+    }
+
+    .url-input:focus {
+      border-color: rgba(255, 255, 255, .25)
+    }
+
+    .url-btn {
+      flex-shrink: 0;
+      padding: 9px 16px;
+      border-radius: 3px;
+      border: none;
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity .15s;
+      background: rgba(255, 255, 255, .12);
+      color: #fff;
+    }
+
+    .url-btn:hover {
+      opacity: .7
+    }
+
+    .url-count {
+      font-size: 10px;
+      opacity: .18;
+      flex-shrink: 0
+    }
+
+    /* light mode overrides */
+    .brand-row.lt .p-ui,
+    .brand-row.lt .p-board {
+      color: #111
+    }
+
+    .brand-row.lt .url-input {
+      background: rgba(0, 0, 0, .04);
+      border-color: rgba(0, 0, 0, .1);
+      color: rgba(0, 0, 0, .7)
+    }
+
+    .brand-row.lt .url-input::placeholder {
+      color: rgba(0, 0, 0, .18)
+    }
+
+    .brand-row.lt .url-btn {
+      background: rgba(0, 0, 0, .08);
+      color: #111
+    }
+
+    /* color OFF state — neutral canvas */
+    .brand-row.no-color {
+      background: #F5F5F3 !important;
+    }
+
+    .brand-row.no-color .p-ui {
+      color: #111 !important
+    }
+
+    .brand-row.no-color .p-board {
+      background: #F5F5F3 !important;
+      color: #111 !important
+    }
+
+    .brand-row.no-color .url-input {
+      background: rgba(0, 0, 0, .04);
+      border-color: rgba(0, 0, 0, .1);
+      color: rgba(0, 0, 0, .7)
+    }
+
+    .brand-row.no-color .url-input::placeholder {
+      color: rgba(0, 0, 0, .18)
+    }
+
+    .brand-row.no-color .url-btn {
+      background: rgba(0, 0, 0, .08);
+      color: #111
+    }
+
+    .brand-row.no-color .p-layer {
+      background: #F5F5F3 !important;
+      color: #111 !important
+    }
+
+    /* custom color buttons */
+    .p-color-btn {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .p-color-btn input[type="color"] {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 40px;
+      height: 40px;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .p-color-swatch {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* image viewer */
+    .p-viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, .9);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .p-viewer.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .p-viewer img {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      transform: scale(0.9);
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, .5);
+    }
+
+    .p-viewer.open img {
+      transform: scale(1);
+    }
+
+    .p-viewer-close {
+      position: absolute;
+      top: 32px;
+      right: 32px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .1);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .p-viewer-close:hover {
+      background: rgba(255, 255, 255, .2)
+    }
+
+    /* color toggle button active state */
+    .p-btn.color-on {
+      opacity: .45;
+      border-style: solid
+    }
+
+    .p-btn.color-off {
+      opacity: .2;
+      border-style: dashed
+    }
+
+    @media(max-width:700px) {
+
+      .p-top,
+      .p-bottom {
+        padding-left: 20px;
+        padding-right: 20px
+      }
+
+      .p-wm {
+        font-size: clamp(42px, 14vw, 100px)
+      }
+
+      .p-board-head,
+      .p-board-bar {
+        padding-left: 20px;
+        padding-right: 20px
+      }
+
+      .p-board-body {
+        margin: 0 20px
+      }
+
+      .v-hint {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="outer" id="outer">
+  </div>
+
+  <div class="p-viewer" id="viewer">
+    <button class="p-viewer-close">&times;</button>
+    <img id="viewer-img" src="" alt="">
+  </div>
+
+  <script>
+    const BRANDS = [
+      {
+        name: 'tasteking', title: 'Tasteking', tag: 'Your taste. Your reign.', variants: [
+          { bg: '#FF5C1A', color: '#fff', wm: 'Tasteking', font: "'Nunito',sans-serif", weight: 900, style: '', ls: '-.02em', label: 'A', fontName: 'Nunito 900', board: 'tasteking-main' },
+          { bg: '#111', color: '#FF5C1A', wm: 'TASTEKING', font: "'Anton',sans-serif", weight: 400, style: '', ls: '.02em', label: 'B', fontName: 'Anton', board: 'tasteking-alt1', tt: 'uppercase' },
+          { bg: '#8B2252', color: '#fff', wm: 'Tasteking', font: "'Titan One',sans-serif", weight: 400, style: '', ls: '0', label: 'C', fontName: 'Titan One', board: 'tasteking-alt2' },
+        ]
+      },
+      {
+        name: 'reslink', title: 'Reslink', tag: 'Reserve. Connect. Arrive.', variants: [
+          { bg: '#0D0D0D', color: '#D4816B', wm: 'Reslink', font: "'Barlow',sans-serif", weight: 900, style: 'italic', ls: '-.03em', label: 'A', fontName: 'Barlow Italic 900', board: 'reslink-main' },
+          { bg: '#F4F4F4', color: '#2D6A4F', wm: 'Reslink', font: "'Sora',sans-serif", weight: 700, style: '', ls: '-.04em', label: 'B', fontName: 'Sora 700', board: 'reslink-alt1', lt: true },
+          { bg: '#1A1210', color: '#C49A6C', wm: 'Reslink', font: "'IBM Plex Mono',monospace", weight: 700, style: '', ls: '-.02em', label: 'C', fontName: 'IBM Plex Mono', board: 'reslink-alt2', smaller: true },
+        ]
+      },
+      {
+        name: 'biteclub', title: 'biteclub', tag: 'Members only. No rules.', variants: [
+          { bg: '#0E0E0E', color: '#E8B631', wm: 'biteclub', font: "'Nunito',sans-serif", weight: 900, style: '', ls: '-.01em', label: 'A', fontName: 'Nunito 900', board: 'biteclub-main' },
+          { bg: '#fff', color: '#111', wm: 'biteclub', font: "'Permanent Marker',cursive", weight: 400, style: '', ls: '.02em', label: 'B', fontName: 'Permanent Marker', board: 'biteclub-alt1', lt: true, tt: 'lowercase' },
+          { bg: '#1A0E0B', color: '#E85D4A', wm: 'biteclub', font: "'Plus Jakarta Sans',sans-serif", weight: 800, style: '', ls: '-.02em', label: 'C', fontName: 'Plus Jakarta Sans 800', board: 'biteclub-alt2' },
+        ]
+      },
+      {
+        name: 'tastenote', title: 'Tastenote', tag: 'Curated Dining Archive', variants: [
+          { bg: '#1C1C1A', color: '#D4AF62', wm: 'Tastenote', font: "'DM Serif Display',serif", weight: 400, style: 'italic', ls: '0', label: 'A', fontName: 'DM Serif Display Italic', board: 'tastenote-main' },
+          { bg: '#fff', color: '#111', wm: 'Tastenote', font: "'Pacifico',cursive", weight: 400, style: '', ls: '-.01em', label: 'B', fontName: 'Pacifico', board: 'tastenote-alt1', lt: true, smaller: true },
+          { bg: '#0F1A10', color: '#8FBF6A', wm: 'Tastenote', font: "'Abril Fatface',serif", weight: 400, style: 'italic', ls: '0', label: 'C', fontName: 'Abril Fatface Italic', board: 'tastenote-alt2' },
+        ]
+      },
+      {
+        name: 'dishlog', title: 'dishlog', tag: 'Every dish. Documented.', variants: [
+          { bg: '#F7F7F5', color: '#6B8068', wm: 'dishlog', font: "'Sora',sans-serif", weight: 700, style: '', ls: '-.04em', label: 'A', fontName: 'Sora 700', board: 'dishlog-main', lt: true },
+          { bg: '#2D9E38', color: '#111', wm: 'dishlog', font: "'Nunito',sans-serif", weight: 900, style: 'italic', ls: '-.04em', label: 'B', fontName: 'Nunito 900 Italic', board: 'dishlog-alt1', lt: true },
+          { bg: '#0D0D0D', color: '#A8C57E', wm: 'dishlog', font: "'Space Mono',monospace", weight: 700, style: '', ls: '-.02em', label: 'C', fontName: 'Space Mono', board: 'dishlog-alt2', smaller: true },
+        ]
+      },
+      {
+        name: 'platlist', title: 'Platlist', tag: 'Your dining playlist.', variants: [
+          { bg: '#111010', color: '#FFD200', wm: 'Platlist', font: "'Josefin Sans',sans-serif", weight: 700, style: 'italic', ls: '-.02em', label: 'A', fontName: 'Josefin Sans Italic 700', board: 'platlist-main' },
+          { bg: '#FEFCE8', color: '#111', wm: 'Platlist', font: "'Barlow',sans-serif", weight: 900, style: 'italic', ls: '-.03em', label: 'B', fontName: 'Barlow Italic 900', board: 'platlist-alt1', lt: true },
+          { bg: '#150C1E', color: '#A855C0', wm: 'Platlist', font: "'DM Serif Display',serif", weight: 400, style: 'italic', ls: '0', label: 'C', fontName: 'DM Serif Display Italic', board: 'platlist-alt2' },
+        ]
+      },
+    ];
+
+    const KEY = 'naming-v4', MAX = 9;
+    const outer = document.getElementById('outer');
+
+    // ── Build Cover ──
+    const cover = document.createElement('div');
+    cover.className = 'cover';
+    cover.innerHTML = `
+  <div class="cover-label">Food Social Service</div>
+  <h1 class="cover-title">Brand Naming Candidates</h1>
+  <div class="cover-grid">
+    ${BRANDS.map((b, i) => {
+      const v = b.variants[0];
+      const num = String(i + 1).padStart(2, '0');
+      return `<div class="cover-item" data-brand-idx="${i}" data-vi="0" style="--v-bg:${v.bg};--v-color:${v.color}">
+        <span class="cover-item-no">${num}</span>
+        <div class="cover-item-wm" style="font-family:${v.font};font-weight:${v.weight};font-style:${v.style || 'normal'};letter-spacing:${v.ls};${v.tt ? 'text-transform:' + v.tt + ';' : ''}">${v.wm}</div>
+        <div class="cover-item-meta">${v.label} · ${v.fontName}</div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="cover-scroll">Scroll ↓</div>
+`;
+    outer.appendChild(cover);
+
+    // Cover items: click to cycle Main → Alt1 → Alt2
+    cover.querySelectorAll('.cover-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const bi = parseInt(item.dataset.brandIdx);
+        let vi = (parseInt(item.dataset.vi) + 1) % 3;
+        item.dataset.vi = vi;
+        const v = BRANDS[bi].variants[vi];
+        const wm = item.querySelector('.cover-item-wm');
+        const meta = item.querySelector('.cover-item-meta');
+        wm.style.fontFamily = v.font;
+        wm.style.fontWeight = v.weight;
+        wm.style.fontStyle = v.style || 'normal';
+        wm.style.letterSpacing = v.ls;
+        wm.style.textTransform = v.tt || 'none';
+        wm.textContent = v.wm;
+        meta.textContent = `${v.label} · ${v.fontName}`;
+        // update css vars for hover
+        item.style.setProperty('--v-bg', v.bg);
+        item.style.setProperty('--v-color', v.color);
+        // flash: show the full panel color briefly
+        item.style.background = v.bg;
+        wm.style.color = v.color;
+        item.querySelector('.cover-item-no').style.color = v.color;
+        meta.style.color = v.color;
+        setTimeout(() => {
+          item.style.background = '';
+          wm.style.color = '';
+          item.querySelector('.cover-item-no').style.color = '';
+          meta.style.color = '';
+        }, 400);
+      });
+    });
+
+    // ── Build Brand Rows ──
+    BRANDS.forEach((brand, bi) => {
+      const row = document.createElement('div');
+      row.className = 'brand-row';
+      row.dataset.brandIdx = bi;
+      row.dataset.vi = 0;
+
+      const v1 = brand.variants[0];
+      if (v1.lt) row.classList.add('lt');
+
+      const num = String(bi + 1).padStart(2, '0');
+
+      row.innerHTML = `
+    <div class="p-layers">
+      ${brand.variants.map((v, vi) => {
+        const wmSz = v.smaller ? 'font-size:clamp(44px,9vw,110px)' : '';
+        return `<div class="p-layer${vi === 0 ? ' active' : ''}" data-vi="${vi}" style="background:${v.bg}; color:${v.color}">
+          <div class="p-wm" style="font-family:${v.font}; font-weight:${v.weight}; font-style:${v.style || 'normal'}; letter-spacing:${v.ls}; ${v.tt ? 'text-transform:' + v.tt + ';' : ''}${wmSz}">${v.wm}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="p-ui p-top">
+      <div class="p-no">${num} — <span class="v-label-text">${v1.label}</span></div>
+      <div class="p-font">${v1.fontName}</div>
+    </div>
+    <div class="p-ui p-bottom">
+      <div class="p-dots">${brand.variants.map((_, i) => `<button class="p-dot${i === 0 ? ' active' : ''}" data-vi="${i}"></button>`).join('')}</div>
+      <div class="p-actions">
+        <span class="p-tag">${brand.tag}</span>
+        <label class="p-btn p-color-btn">
+          <div class="p-color-swatch p-bg-swatch" style="background:${v1.bg}"></div>
+          BG
+          <input type="color" class="p-input-bg" value="${v1.bg}">
+        </label>
+        <label class="p-btn p-color-btn">
+          <div class="p-color-swatch p-txt-swatch" style="background:${v1.color}"></div>
+          TXT
+          <input type="color" class="p-input-txt" value="${v1.color}">
+        </label>
+        <button class="p-btn p-board-open">Moodboard</button>
+      </div>
+    </div>
+    <div class="p-board">
+      <div class="p-board-head">
+        <div class="p-board-title"><span class="v-wm-text">${v1.wm}</span> — <span class="v-label-text">${v1.label}</span></div>
+        <button class="p-board-close">Close</button>
+      </div>
+      <div class="p-board-body" data-board-grid="${v1.board}">
+        <div class="mb-empty">
+          <svg class="mb-empty-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="mb-empty-text">이미지 URL을 추가하세요</div>
+        </div>
+        <div class="mb-grid"></div>
+      </div>
+      <div class="p-board-bar">
+        <input class="url-input" type="text" placeholder="이미지 URL 붙여넣기 후 Enter">
+        <button class="url-btn">Add</button>
+        <span class="url-count">0/9</span>
+      </div>
+    </div>
+  `;
+      outer.appendChild(row);
+    });
+
+    function setVariant(row, nextVi) {
+      const currentVi = parseInt(row.dataset.vi);
+      if (currentVi === nextVi) return;
+
+      const bi = parseInt(row.dataset.brandIdx);
+      const v = BRANDS[bi].variants[nextVi];
+      const layers = row.querySelectorAll('.p-layer');
+      const curLayer = layers[currentVi];
+      const nextLayer = layers[nextVi];
+
+      row.dataset.vi = nextVi;
+      row.classList.toggle('lt', !!v.lt);
+
+      // Determine wipe direction
+      const swipeDir = nextVi > currentVi ? 'right' : 'left';
+      nextLayer.style.transition = 'none';
+      nextLayer.style.clipPath = swipeDir === 'right' ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)';
+      nextLayer.classList.add('wiping');
+      
+      const nextWm = nextLayer.querySelector('.p-wm');
+      nextWm.style.transition = 'none';
+      nextWm.style.transform = swipeDir === 'right' ? 'translateX(100px)' : 'translateX(-100px)';
+
+      // Force reflow
+      nextLayer.offsetHeight;
+
+      nextLayer.style.transition = '';
+      nextWm.style.transition = '';
+      nextLayer.style.clipPath = 'inset(0 0 0 0)';
+      nextWm.style.transform = 'translateX(0)';
+
+      // Update UI fixed parts immediately or during transition
+      row.style.background = v.bg; // for the edge gaps
+      row.querySelectorAll('.v-label-text').forEach(el => el.textContent = v.label);
+      row.querySelector('.p-font').textContent = v.fontName;
+      row.querySelector('.v-wm-text').textContent = v.wm;
+      row.querySelectorAll('.p-dot').forEach((d, i) => d.classList.toggle('active', i === nextVi));
+
+      // Sync color pickers
+      const bgInput = row.querySelector('.p-input-bg');
+      const txtInput = row.querySelector('.p-input-txt');
+      bgInput.value = rgbToHex(v.bg);
+      txtInput.value = rgbToHex(v.color);
+      row.querySelector('.p-bg-swatch').style.background = v.bg;
+      row.querySelector('.p-txt-swatch').style.background = v.color;
+
+      setTimeout(() => {
+        curLayer.classList.remove('active');
+        nextLayer.classList.remove('wiping');
+        nextLayer.classList.add('active');
+        
+        // Update moodboard context
+        const boardBody = row.querySelector('.p-board-body');
+        const boardInp = row.querySelector('.url-input');
+        const boardBtn = row.querySelector('.url-btn');
+        const boardCnt = row.querySelector('.url-count');
+        boardBody.dataset.boardGrid = v.board;
+        boardInp.dataset.board = v.board;
+        boardBtn.dataset.board = v.board;
+        boardCnt.dataset.board = v.board;
+        render(v.board);
+      }, 800);
+    }
+
+    // ── Moodboard store ──
+    let S = {};
+    function load() { try { S = JSON.parse(localStorage.getItem(KEY) || '{}') } catch (e) { S = {} } BRANDS.forEach(b => b.variants.forEach(v => { if (!Array.isArray(S[v.board])) S[v.board] = [] })) }
+    function save() { localStorage.setItem(KEY, JSON.stringify(S)) }
+
+    function layout(n) {
+      return [{}, { c: '1fr', r: '1fr', s: [] }, { c: '1fr 1fr', r: '1fr', s: [] }, { c: '1fr 1fr', r: '1fr 1fr', s: [, , '1/span 2'] }, { c: '1fr 1fr', r: '1fr 1fr', s: [] }, { c: '1fr 1fr 1fr', r: '1fr 1fr', s: [, , , '1/span 2'] }, { c: '1fr 1fr 1fr', r: '1fr 1fr', s: [] }, { c: '1fr 1fr 1fr', r: '1fr 1fr 1fr', s: [, , , , '1/span 2', , '1/span 2'] }, { c: '1fr 1fr 1fr 1fr', r: '1fr 1fr', s: [] }, { c: '1fr 1fr 1fr', r: '1fr 1fr 1fr', s: [] }][Math.min(n, 9)];
+    }
+
+    function render(board) {
+      const area = document.querySelector(`[data-board-grid="${board}"]`);
+      if (!area) return;
+      const grid = area.querySelector('.mb-grid');
+      const imgs = S[board] || [];
+      area.classList.toggle('has-images', imgs.length > 0);
+      grid.innerHTML = '';
+      if (!imgs.length) return;
+      const { c, r, s } = layout(imgs.length);
+      grid.style.gridTemplateColumns = c; grid.style.gridTemplateRows = r;
+      imgs.forEach((url, i) => {
+        const t = document.createElement('div'); t.className = 'mb-tile';
+        if (s[i]) t.style.gridColumn = s[i];
+        const img = document.createElement('img'); img.src = url; img.loading = 'lazy';
+        img.onerror = () => { t.style.background = 'rgba(128,128,128,.05)'; img.remove() };
+        img.onclick = () => {
+          const v = document.getElementById('viewer');
+          v.querySelector('img').src = img.src;
+          v.classList.add('open');
+        };
+        const del = document.createElement('button'); del.className = 'mb-tile-del'; del.textContent = '\u00d7';
+        del.addEventListener('click', e => { e.stopPropagation(); S[board].splice(i, 1); save(); render(board); cnt(board) });
+        t.append(img, del); grid.appendChild(t);
+      });
+      cnt(board);
+    }
+    function cnt(board) { const n = (S[board] || []).length; document.querySelectorAll(`.url-count[data-board="${board}"]`).forEach(el => el.textContent = `${n}/9`) }
+    function add(board, url) { url = url.trim(); if (!url.startsWith('http')) return; if (!S[board]) S[board] = []; if (S[board].length >= MAX || S[board].includes(url)) return; S[board].push(url); save(); render(board) }
+
+    // ── Utils ──
+    function rgbToHex(c) {
+      if (c.startsWith('#')) return c;
+      const rgb = c.match(/\d+/g);
+      if (!rgb) return '#000000';
+      return "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+    }
+    function getLum(hex) {
+      const c = hex.substring(1); const rgb = parseInt(c, 16); const r = (rgb >> 16) & 0xff; const g = (rgb >> 8) & 0xff; const b = (rgb >> 0) & 0xff;
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    // ── Events ──
+    document.addEventListener('input', e => {
+      const bgInp = e.target.closest('.p-input-bg');
+      const txtInp = e.target.closest('.p-input-txt');
+      if (bgInp || txtInp) {
+        const row = e.target.closest('.brand-row');
+        const vi = parseInt(row.dataset.vi);
+        const layer = row.querySelectorAll('.p-layer')[vi];
+        if (bgInp) {
+          layer.style.background = bgInp.value;
+          row.querySelector('.p-bg-swatch').style.background = bgInp.value;
+          row.classList.toggle('lt', getLum(bgInp.value) > 170);
+        } else {
+          layer.style.color = txtInp.value;
+          row.querySelector('.p-txt-swatch').style.background = txtInp.value;
+        }
+      }
+    });
+
+    document.addEventListener('click', e => {
+      const dot = e.target.closest('.p-dot');
+      if (dot) {
+        const row = dot.closest('.brand-row');
+        setVariant(row, parseInt(dot.dataset.vi));
+      }
+
+      const openBtn = e.target.closest('.p-board-open');
+      if (openBtn) openBtn.closest('.brand-row').querySelector('.p-board').classList.add('open');
+
+      const closeBtn = e.target.closest('.p-board-close');
+      if (closeBtn) closeBtn.closest('.p-board').classList.remove('open');
+
+      const viewer = document.getElementById('viewer');
+      if (e.target.closest('.p-viewer-close') || e.target === viewer) {
+        viewer.classList.remove('open');
+      }
+
+      const addBtn = e.target.closest('.url-btn');
+      if (addBtn) {
+        const board = addBtn.dataset.board;
+        const inp = addBtn.closest('.p-board-bar').querySelector('.url-input');
+        add(board, inp.value);
+        inp.value = '';
+        inp.focus();
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT') {
+        if (e.key === 'Enter') {
+          const board = e.target.dataset.board;
+          add(board, e.target.value);
+          e.target.value = '';
+        }
+        return;
+      }
+    });
+
+    // ── Keyboard Navigation ──
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const openBoard = document.querySelector('.p-board.open');
+      if (openBoard) {
+        if (e.key === 'Escape') openBoard.classList.remove('open');
+        return;
+      }
+
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        const h = window.innerHeight;
+        const rows = [cover, ...outer.querySelectorAll('.brand-row')];
+        let bIdx = Math.round(outer.scrollTop / h);
+
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          if (e.key === 'ArrowUp') bIdx--; else bIdx++;
+          bIdx = Math.max(0, Math.min(bIdx, rows.length - 1));
+          outer.scrollTo({ top: bIdx * h, behavior: 'smooth' });
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          if (bIdx > 0) {
+            const row = rows[bIdx];
+            let vIdx = parseInt(row.dataset.vi);
+            if (e.key === 'ArrowLeft') vIdx--; else vIdx++;
+            vIdx = Math.max(0, Math.min(vIdx, 2));
+            setVariant(row, vIdx);
+          }
+        }
+      }
+    });
+
+    // ── Init ──
+    load();
+    BRANDS.forEach(b => b.variants.forEach(v => render(v.board)));
+  </script>
+</body>
+
+</html>
