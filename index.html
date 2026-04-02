@@ -189,25 +189,76 @@
       transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
       border-top: 1px solid rgba(255, 255, 255, .1);
     }
+
     .brand-row.lt .p-edit {
       background: rgba(255, 255, 255, .6);
       border-top-color: rgba(0, 0, 0, .1);
       color: #111;
     }
-    .p-edit.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .p-edit-head { padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; }
-    .p-edit-body { padding: 0 32px 32px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
-    
-    .p-edit-group { display: flex; flex-direction: column; gap: 12px; }
-    .p-edit-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; opacity: .4; font-weight: 600; }
-    
-    .p-range-wrap { display: flex; align-items: center; gap: 16px; }
-    .p-range { flex: 1; height: 2px; -webkit-appearance: none; appearance: none; background: rgba(128,128,128,.2); outline: none; }
-    .p-range::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: currentColor; cursor: pointer; }
-    
+
+    .p-edit.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .p-edit-head {
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .p-edit-body {
+      padding: 0 32px 32px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .p-edit-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .p-edit-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      opacity: .4;
+      font-weight: 600;
+    }
+
+    .p-range-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .p-range {
+      flex: 1;
+      height: 2px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(128, 128, 128, .2);
+      outline: none;
+    }
+
+    .p-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: currentColor;
+      cursor: pointer;
+    }
+
     .p-note-area {
-      background: rgba(128,128,128,.05);
-      border: 1px solid rgba(128,128,128,.1);
+      background: rgba(128, 128, 128, .05);
+      border: 1px solid rgba(128, 128, 128, .1);
       border-radius: 8px;
       padding: 16px;
       min-height: 120px;
@@ -218,36 +269,110 @@
       line-height: 1.6;
       width: 100%;
     }
-    .p-note-area:focus { outline: none; border-color: rgba(128,128,128,.3); }
+
+    .p-note-area:focus {
+      outline: none;
+      border-color: rgba(128, 128, 128, .3);
+    }
 
     @media(max-width: 850px) {
-      .outer, .brand-row { height: 100dvh; }
-      
-      .p-top { padding: 20px; }
-      .p-bottom { padding: 20px 20px 30px; flex-direction: column; gap: 20px; align-items: flex-start; }
-      
-      .p-actions { width: 100%; justify-content: space-between; }
-      .p-tag { position: absolute; top: -20px; left: 0; white-space: nowrap; }
-      
-      .p-wm { font-size: clamp(42px, 15vw, 90px); }
-      .p-no { font-size: 10px; }
-      .p-font { font-size: 9px; text-align: left; margin-top: 4px; }
-      
-      .p-board-head, .p-board-bar { padding: 15px 20px; }
-      .p-board-body { margin: 0 20px; }
-      .url-input { font-size: 12px; }
 
-      .p-edit { height: 60vh; }
-      .p-edit-head, .p-edit-body { padding: 20px; }
+      .outer,
+      .brand-row {
+        height: 100dvh;
+      }
+
+      .p-top {
+        padding: 20px;
+      }
+
+      .p-bottom {
+        padding: 20px 20px 30px;
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+      }
+
+      .p-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .p-tag {
+        position: absolute;
+        top: -20px;
+        left: 0;
+        white-space: nowrap;
+      }
+
+      .p-wm {
+        font-size: clamp(42px, 15vw, 90px);
+      }
+
+      .p-no {
+        font-size: 10px;
+      }
+
+      .p-font {
+        font-size: 9px;
+        text-align: left;
+        margin-top: 4px;
+      }
+
+      .p-board-head,
+      .p-board-bar {
+        padding: 15px 20px;
+      }
+
+      .p-board-body {
+        margin: 0 20px;
+      }
+
+      .url-input {
+        font-size: 12px;
+      }
+
+      .p-edit {
+        height: 60vh;
+      }
+
+      .p-edit-head,
+      .p-edit-body {
+        padding: 20px;
+      }
 
       /* Hero Page (Cover) mobile grid 2x3 */
-      .cover { padding: 40px 20px; justify-content: center; }
-      .cover-label { margin-bottom: 20px; }
-      .cover-title { margin-bottom: 30px; font-size: clamp(24px, 6vw, 36px); }
-      .cover-grid { grid-template-columns: repeat(2, 1fr); max-width: 480px; margin: 0 auto; }
-      .cover-item { padding: 20px 12px; }
-      .cover-item-no { margin-bottom: 6px; }
-      .cover-item-wm { font-size: clamp(16px, 4vw, 22px); }
+      .cover {
+        padding: 40px 20px;
+        justify-content: center;
+      }
+
+      .cover-label {
+        margin-bottom: 20px;
+      }
+
+      .cover-title {
+        margin-bottom: 30px;
+        font-size: clamp(24px, 6vw, 36px);
+      }
+
+      .cover-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 480px;
+        margin: 0 auto;
+      }
+
+      .cover-item {
+        padding: 20px 12px;
+      }
+
+      .cover-item-no {
+        margin-bottom: 6px;
+      }
+
+      .cover-item-wm {
+        font-size: clamp(16px, 4vw, 22px);
+      }
     }
 
     /* vertical scroll hint */
@@ -710,7 +835,7 @@
       border-style: dashed
     }
 
-      }
+    }
     }
   </style>
 </head>
@@ -883,6 +1008,12 @@
             <input type="range" class="p-range p-ls-range" min="-0.1" max="0.3" step="0.005" value="${parseFloat(v1.ls) || 0}">
           </div>
         </div>
+        <div class="p-edit-group">
+          <div class="p-range-wrap">
+            <div class="p-edit-label">Font Size</div>
+            <input type="range" class="p-range p-sz-range" min="20" max="160" step="1" value="${v1.sz ? parseInt(v1.sz) : (v1.smaller ? 80 : 100)}">
+          </div>
+        </div>
         <div class="p-edit-group" style="flex:1">
           <div class="p-edit-label">Naming Notes</div>
           <textarea class="p-note-area" placeholder="Write your thoughts about this candidate..."></textarea>
@@ -920,6 +1051,13 @@
       const layers = row.querySelectorAll('.p-layer');
       const curLayer = layers[currentVi];
       const nextLayer = layers[nextVi];
+      const nextWm = nextLayer.querySelector('.p-wm');
+
+      // Apply overrides before wipe
+      nextLayer.style.background = v.bg;
+      nextLayer.style.color = v.color;
+      nextWm.style.letterSpacing = v.ls;
+      if (v.sz) nextWm.style.fontSize = v.sz;
 
       row.dataset.vi = nextVi;
       row.classList.add('is-animating');
@@ -930,8 +1068,7 @@
       nextLayer.style.transition = 'none';
       nextLayer.style.clipPath = swipeDir === 'right' ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)';
       nextLayer.classList.add('wiping');
-      
-      const nextWm = nextLayer.querySelector('.p-wm');
+
       nextWm.style.transition = 'none';
       nextWm.style.transform = swipeDir === 'right' ? 'translateX(100px)' : 'translateX(-100px)';
 
@@ -963,7 +1100,7 @@
         nextLayer.classList.remove('wiping');
         nextLayer.classList.add('active');
         row.classList.remove('is-animating');
-        
+
         // Update moodboard context
         const boardBody = row.querySelector('.p-board-body');
         const boardInp = row.querySelector('.url-input');
@@ -1069,6 +1206,7 @@
       const bgInp = e.target.closest('.p-input-bg');
       const txtInp = e.target.closest('.p-input-txt');
       const lsRange = e.target.closest('.p-ls-range');
+      const szRange = e.target.closest('.p-sz-range');
       const noteArea = e.target.closest('.p-note-area');
 
       if (bgInp) {
@@ -1085,6 +1223,10 @@
         const val = lsRange.value + 'em';
         layer.querySelector('.p-wm').style.letterSpacing = val;
         updateOverride(bi, vi, { ls: val });
+      } else if (szRange) {
+        const val = szRange.value + 'px';
+        layer.querySelector('.p-wm').style.fontSize = val;
+        updateOverride(bi, vi, { sz: val });
       } else if (noteArea) {
         updateOverride(bi, vi, { note: noteArea.value });
       }
@@ -1105,6 +1247,7 @@
         const config = getVConfig(bi, vi);
         row.querySelector('.p-note-area').value = config.note || '';
         row.querySelector('.p-ls-range').value = parseFloat(config.ls) || 0;
+        row.querySelector('.p-sz-range').value = config.sz ? parseInt(config.sz) : (config.smaller ? 80 : 100);
         row.querySelector('.p-edit').classList.add('open');
       }
 
@@ -1185,7 +1328,7 @@
       const dX = tX - e.changedTouches[0].clientX;
       const dY = tY - e.changedTouches[0].clientY;
       const row = e.target.closest('.brand-row');
-      
+
       // Horizontal swipe (Variant change)
       if (Math.abs(dX) > 40 && Math.abs(dX) > Math.abs(dY) && row) {
         let vIdx = parseInt(row.dataset.vi);
@@ -1228,7 +1371,8 @@
         layer.style.background = config.bg;
         layer.style.color = config.color;
         layer.querySelector('.p-wm').style.letterSpacing = config.ls;
-        
+        if (config.sz) layer.querySelector('.p-wm').style.fontSize = config.sz;
+
         // Finalize base UI for active variant
         if (vi === 0) {
           row.style.background = config.bg;
@@ -1236,7 +1380,7 @@
           row.querySelector('.p-bg-swatch').style.background = config.bg;
           row.querySelector('.p-txt-swatch').style.background = config.color;
         }
-        
+
         render(v.board);
       });
     });
