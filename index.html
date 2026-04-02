@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Naming Candidates</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
@@ -20,8 +20,9 @@
 
     html,
     body {
-      height: 100%;
-      overflow: hidden
+      height: 100dvh;
+      overflow: hidden;
+      background: #000;
     }
 
     body {
@@ -283,11 +284,11 @@
       }
 
       .p-top {
-        padding: 20px;
+        padding: calc(20px + env(safe-area-inset-top)) 20px 20px;
       }
 
       .p-bottom {
-        padding: 20px 20px 30px;
+        padding: 20px 20px calc(30px + env(safe-area-inset-bottom));
         flex-direction: column;
         gap: 20px;
         align-items: flex-start;
